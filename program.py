@@ -67,9 +67,31 @@ def gregory_newton(n, numbers, kthdifference):
     return total
             
         
-thenumbers = [x**2 - 3*x + 1 for x in range(0,5)]
 
-print(gregory_newton(35, thenumbers, 3))
+
+def first_n_numbers_of_recurrence(n):
+    
+    if n == 0:
+        return [u0]
+    
+    if n== 1:
+        return [u0,u1]
+    
+        
+    nums = [u0,u1]
+    
+    for _ in range(n-2):
+        
+        nextnum = lam * nums[-1] + mu * nums[-2]
+        
+        nums.append(nextnum)
+        
+    return nums
+
+
+        
+        
+    
             
             
             
