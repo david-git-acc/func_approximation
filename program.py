@@ -161,35 +161,78 @@ title = plt.suptitle(f"Approximating the recurrence: u(n) = {lam}u(n-1) {sign} {
 recurrence_from_0_to_extent = first_n_numbers_of_recurrence(extent) 
 ax1plot_original = ax1.plot(x, [ growth_rate_limiter(x) for x in recurrence_from_0_to_extent] , color="green")    
 
-
+original_recurrence_frames = []
 my_recurrence_frames = []
 gregs_frames = []
 
 for t in range(extent):
     
-    
+    original_rec_frames = first_n_numbers_of_recurrence(t+1)
     my_recurrence_version = [recurrence(n, t) for n in range(0, extent)]
     greg_numbers = [gregory_newton(n, recurrence_from_0_to_extent, t) for n in range(0,extent)]
     
+    original_recurrence_frames.append(original_rec_frames)
     my_recurrence_frames.append(my_recurrence_version)
     gregs_frames.append(greg_numbers)
     
     
+interpolation_extent = 10
 
+def interpolate(my_recurrence_frames):
 
+    my_interpolated_recurrence_frames = []
+
+    for i in range(len(my_recurrence_frames) - 1):
+        
+        prev_framelist = my_recurrence_frames[i]
+        next_framelist = my_recurrence_frames[i+1]
+        
+        interpolation_lists = [prev_framelist]
+        
+        for j in range(1, interpolation_extent-1 + 1):
+            
+            the_next_new_interpolation_list = []
+            
+            for k, value in enumerate(prev_framelist):
+                
+                current_frame_from_prevframelist = prev_framelist[k]
+                current_frame_from_nextframelist = next_framelist[k]
+                diff = current_frame_from_nextframelist - current_frame_from_prevframelist
+                
+                the_next_new_frame = current_frame_from_prevframelist + (j/interpolation_extent) * diff
+                
+                the_next_new_interpolation_list.append(the_next_new_frame)
+                
+            interpolation_lists.append(the_next_new_interpolation_list)
+            
+        my_interpolated_recurrence_frames += interpolation_lists
+        
+    my_interpolated_recurrence_frames.append( my_recurrence_frames[-1] )
+    
+    return my_interpolated_recurrence_frames
+
+original_recurrence_frames = interpolate(original_recurrence_frames)
+my_recurrence_frames = interpolate(my_recurrence_frames)
+gregs_frames = interpolate(gregs_frames)
+        
 
 def animate(t):
 
     global my_reccurrence_frames
     global gregs_frames
 
+
     ax2.cla()
     ax3.cla()
     
+    ax1.grid(True)
     ax2.grid(True)
     ax3.grid(True)
     
-    title = plt.suptitle(f"Approximating the recurrence: u(n) = {lam}u(n-1) {sign} {abs(mu)}u(n-2), t = {t}")
+
+    
+    the_true_t = t // interpolation_extent
+    title = plt.suptitle(f"Approximating the recurrence: u(n) = {lam}u(n-1) {sign} {abs(mu)}u(n-2), t = {t}, true = {the_true_t}")
     
     ax1.set_ylabel("u(n)", fontsize=15)
     ax1.set_xlabel("n (original recurrence)" , fontsize=15)
@@ -208,10 +251,12 @@ def animate(t):
    
     my_rec_values = ax2.plot(x, [growth_rate_limiter(x) for x in my_recurrence_frames[t] ], color="red")
     greg_formula = ax3.plot(x, [ growth_rate_limiter(x) for x in gregs_frames[t]], color = "blue")
+    
+    ax2.set_ylim(ax3.get_ylim())
 
 
 
-anim = FuncAnimation(fig, animate, extent, interval=10, repeat_delay = 2500)
+anim = FuncAnimation(fig, animate, frames = extent*(interpolation_extent ) - interpolation_extent, interval=1, repeat_delay = 2500)
 
 
 
