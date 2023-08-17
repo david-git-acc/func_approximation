@@ -6,6 +6,7 @@ u1=1
 
 import math as maths
 
+
 def factorial(n):
     
     if n < 0:
@@ -89,9 +90,47 @@ def first_n_numbers_of_recurrence(n):
     return nums
 
 
-        
-        
-    
+from matplotlib import pyplot as plt
+import numpy as np
+from matplotlib.animation import FuncAnimation
+
+extent = 25
+sign = "-" if mu < 0 else "+"
+
+fig, (ax1,ax2,ax3) = plt.subplots(ncols=3,nrows=1)
+
+recurrence_from_0_to_extent = first_n_numbers_of_recurrence(extent) 
+my_recurrence_version = [recurrence(i) for i in range(0, extent)]
+greg_numbers = [gregory_newton(n, recurrence_from_0_to_extent, extent-1) for n in range(0,24+1)]
+
+
+ax1.grid(True)
+ax2.grid(True)
+ax3.grid(True)
+
+
+
+
+x = np.arange(0,extent)
+
+growth_rate_limiter = lambda x : x ** (1/3)
+
+ax1plot_original = ax1.plot(x, [ growth_rate_limiter(x) for x in recurrence_from_0_to_extent] , color="green")
+my_rec_values = ax2.plot(x, [growth_rate_limiter(x) for x in my_recurrence_version], color="red")
+greg_formula = ax3.plot(x, [ growth_rate_limiter(x) for x in greg_numbers], color = "blue")
+
+ax1.set_ylabel("u(n)", fontsize=15)
+ax1.set_xlabel("n (original recurrence)" , fontsize=15)
+
+ax2.set_xlabel("Finite series approximation")
+ax3.set_xlabel("Gregory-Newton approximation")
+
+ax3.yaxis.set_label_position("right")
+ax3.set_ylabel(f"(data coded: f(x) = cbrt(x))")
+
+plt.suptitle(f"Approximating the recurrence: u(n) = {lam}u(n-1) {sign} {abs(mu)}u(n-2)")
+
+plt.show()
             
             
             
