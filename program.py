@@ -142,17 +142,17 @@ from matplotlib import pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-
+px =1/96
 extent = 30
 sign = "-" if mu < 0 else "+"
 
-fig, (ax1,ax2,ax3) = plt.subplots(ncols=3,nrows=1)
+fig, (ax1,ax2,ax3) = plt.subplots(ncols=3,nrows=1, figsize=(1920*px, 1080*px))
 
 ax1.grid(True)
 
 x = np.arange(0,extent)
 
-growth_rate_limiter = lambda x : x ** (1/9)
+growth_rate_limiter = lambda x : x ** (1/27)
 
 
 
@@ -167,7 +167,7 @@ gregs_frames = []
 
 for t in range(extent):
     
-    original_rec_frames = first_n_numbers_of_recurrence(t+1)
+    original_rec_frames = first_n_numbers_of_recurrence(t+4)
     my_recurrence_version = [recurrence(n, t) for n in range(0, extent)]
     greg_numbers = [gregory_newton(n, recurrence_from_0_to_extent, t) for n in range(0,extent)]
     
@@ -176,7 +176,7 @@ for t in range(extent):
     gregs_frames.append(greg_numbers)
     
     
-interpolation_extent = 10
+interpolation_extent = 100
 
 def interpolate(my_recurrence_frames):
 
@@ -215,13 +215,18 @@ original_recurrence_frames = interpolate(original_recurrence_frames)
 my_recurrence_frames = interpolate(my_recurrence_frames)
 gregs_frames = interpolate(gregs_frames)
         
+top = max( [growth_rate_limiter(x).real for x in original_recurrence_frames[-1]]) 
+bottom = min( [growth_rate_limiter(x).real for x in original_recurrence_frames[-1]])
+
+text = plt.text(0.08, -0.2, f"u(0) = {u0}, u(1) = {u1}",fontsize=12    , ha="left", va = "bottom", transform=ax1.transAxes)
+
 
 def animate(t):
 
     global my_reccurrence_frames
     global gregs_frames
 
-
+    ax1.cla()
     ax2.cla()
     ax3.cla()
     
@@ -229,40 +234,48 @@ def animate(t):
     ax2.grid(True)
     ax3.grid(True)
     
+    text = plt.text(0.1, -0.1, f"u(0) = {u0}, u(1) = {u1}",fontsize=12    , ha="left", va = "bottom", transform=ax1.transAxes)
+    
 
     
     the_true_t = t // interpolation_extent
-    title = plt.suptitle(f"Approximating the recurrence: u(n) = {lam}u(n-1) {sign} {abs(mu)}u(n-2), t = {t}, true = {the_true_t}")
+    title = plt.suptitle(f"Approximating the recurrence: u(n) = {lam}u(n-1) {sign} {abs(mu)}u(n-2)", fontsize=20)
     
     ax1.set_ylabel("u(n)", fontsize=15)
     ax1.set_xlabel("n (original recurrence)" , fontsize=15)
 
-    ax2.set_xlabel("Finite series approximation")
-    ax3.set_xlabel("Gregory-Newton approximation")
+    ax2.set_xlabel("Finite series approximation", fontsize= 15)
+    ax3.set_xlabel("Gregory-Newton approximation",fontsize = 15)
 
     ax3.yaxis.set_label_position("right")
-    ax3.set_ylabel(f"(data coded: f(x) = cbrt(x))")
+    ax3.set_ylabel(f"(data coded: f(x) = x^(1/27)")
 
 
     
+    next_orig = original_recurrence_frames[t]
 
 
-
-   
+    original_rec_values = ax1.plot(np.arange(0,len(next_orig)) , [growth_rate_limiter(x) for x in next_orig], color="green")
     my_rec_values = ax2.plot(x, [growth_rate_limiter(x) for x in my_recurrence_frames[t] ], color="red")
     greg_formula = ax3.plot(x, [ growth_rate_limiter(x) for x in gregs_frames[t]], color = "blue")
     
-    ax2.set_ylim(ax3.get_ylim())
+    
+    ax1.set_ylim(bottom,top)
+    ax2.set_ylim(bottom, top )
+    ax3.set_ylim(bottom, top)
+    ax1.set_xlim(0,30)
+    ax2.set_xlim(0,30)
+    ax3.set_xlim(0,30)
 
 
 
 anim = FuncAnimation(fig, animate, frames = extent*(interpolation_extent ) - interpolation_extent, interval=1, repeat_delay = 2500)
 
 
+anim.save("first.gif", fps=1000 )
 
 
 
-plt.show()
             
             
             
